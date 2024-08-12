@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="28fbaf5d-f525-48d6-816b-c239e5dc7237" name="Changes" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JavaScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2h6NwZAVHhg1v94t0kraYklR2TN" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/saria/Desktop/scientific-calculation/public/models&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;project.propVCSSupport.DirectoryMappings&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\saria\Desktop\scientific-calculation\public\models" />
+      <recent name="C:\Users\saria\Desktop\ScientificCalculations\src\img" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\saria\Desktop\ScientificCalculations\public" />
+      <recent name="C:\Users\saria\Desktop\ScientificCalculations" />
+      <recent name="C:\Users\saria\Desktop\ScientificCalculations\src" />
+      <recent name="C:\Users\saria\Desktop\ScientificCalculations\src\js" />
+    </key>
+  </component>
+  <component name="RunManager" selected="JavaScript Debug.index.html">
+    <configuration name="index.html" type="JavascriptDebugType" temporary="true" nameIsGenerated="true" uri="http://localhost:63342/ScientificCalculations/index.html" useBuiltInWebServerPort="true">
+      <method v="2" />
+    </configuration>
+    <configuration name="EnvironmentManager.js" type="NodeJSConfigurationType" temporary="true" nameIsGenerated="true" path-to-js-file="$PROJECT_DIR$/src/js/EnvironmentManager.js" working-dir="$PROJECT_DIR$/src/js">
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JavaScript Debug.index.html" />
+        <item itemvalue="Node.js.EnvironmentManager.js" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="28fbaf5d-f525-48d6-816b-c239e5dc7237" name="Changes" comment="" />
+      <created>1716910807392</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1716910807392</updated>
+      <workItem from="1716910808772" duration="868000" />
+      <workItem from="1716912780189" duration="16608000" />
+      <workItem from="1717024589254" duration="898000" />
+      <workItem from="1717081489570" duration="2970000" />
+      <workItem from="1717142950393" duration="8184000" />
+      <workItem from="1717177666538" duration="1296000" />
+      <workItem from="1717441408524" duration="1602000" />
+      <workItem from="1717447321008" duration="2996000" />
+      <workItem from="1717453957227" duration="3010000" />
+      <workItem from="1717495427761" duration="3289000" />
+      <workItem from="1717502181341" duration="217000" />
+      <workItem from="1717502408320" duration="2352000" />
+      <workItem from="1717526257030" duration="1516000" />
+      <workItem from="1717748998313" duration="3651000" />
+      <workItem from="1717785834922" duration="5960000" />
+      <workItem from="1718054614852" duration="753000" />
+      <workItem from="1718122208872" duration="5356000" />
+      <workItem from="1718177514093" duration="4305000" />
+      <workItem from="1718182933849" duration="760000" />
+      <workItem from="1718209640443" duration="1028000" />
+      <workItem from="1719236856845" duration="545000" />
+      <workItem from="1719261702941" duration="3910000" />
+      <workItem from="1719485757631" duration="424000" />
+      <workItem from="1719642742015" duration="13511000" />
+      <workItem from="1719683476175" duration="10150000" />
+      <workItem from="1722109678616" duration="361000" />
+      <workItem from="1722110060936" duration="1412000" />
+      <workItem from="1722327894112" duration="4796000" />
+      <workItem from="1722499234561" duration="1006000" />
+      <workItem from="1722700487388" duration="777000" />
+      <workItem from="1722704675287" duration="670000" />
+      <workItem from="1722713339244" duration="7941000" />
+      <workItem from="1722756944338" duration="8504000" />
+      <workItem from="1722778868215" duration="1498000" />
+      <workItem from="1722780393765" duration="1768000" />
+      <workItem from="1723381869786" duration="15585000" />
+      <workItem from="1723447978355" duration="19842000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>
