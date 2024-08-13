@@ -3,8 +3,8 @@ import { SceneManager } from './SceneManager';
 import { EnvironmentManager } from './EnvironmentManager.js';
 import { ControlsManager } from './ControlsManager.js';
 import { ModelManager } from './ModelManager.js';
-import * as dat from 'dat.gui';
 import {Land} from './land.js';
+import {Forces} from "./Forces";
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -16,8 +16,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const sceneManager = new SceneManager(container);
     const environmentManager = new EnvironmentManager(sceneManager.scene);
     const controlsManager = new ControlsManager();
-    const modelManager = new ModelManager(sceneManager.scene, sceneManager.camera, controlsManager);
     const land = new Land(sceneManager.scene);
+    const forces = new Forces();
+    const modelManager = new ModelManager(sceneManager.scene, sceneManager.camera, controlsManager, land, forces);
+    modelManager.forces = forces;
 
 
     //main loop

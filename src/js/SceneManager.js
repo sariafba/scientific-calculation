@@ -15,7 +15,7 @@ export class SceneManager {
         container.appendChild(this.renderer.domElement);
 
         // Initialize camera
-        this.camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 0.1, 200000);
+    this.camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 0.1, 100000);
 
         // Handle window resize
         window.addEventListener('resize', () => this.onWindowResize());

@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="28fbaf5d-f525-48d6-816b-c239e5dc7237" name="Changes" comment="" />
+    <list default="true" id="28fbaf5d-f525-48d6-816b-c239e5dc7237" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/ControlsManager.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/ControlsManager.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/Force.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/Forces.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/ModelManager.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/ModelManager.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/SceneManager.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/SceneManager.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/land.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/land.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/main.js" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -107,7 +115,9 @@
       <workItem from="1722778868215" duration="1498000" />
       <workItem from="1722780393765" duration="1768000" />
       <workItem from="1723381869786" duration="15585000" />
-      <workItem from="1723447978355" duration="19842000" />
+      <workItem from="1723447978355" duration="21967000" />
+      <workItem from="1723487157038" duration="626000" />
+      <workItem from="1723487804427" duration="28912000" />
     </task>
     <servers />
   </component>

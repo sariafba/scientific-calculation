@@ -7,6 +7,17 @@ export class ControlsManager
         this.isTurningLeft = false;
         this.isTurningRight = false;
 
+        // let start = new Date().getTime();
+        // setInterval(function() {
+        //
+        //     // Get today's date and time
+        //     let now = new Date().getTime();
+        //
+        //     // Find the distance between now and the count-down date
+        //     let timer = now - start;
+        //
+        //     console.log(Math.round(timer/1000));
+        // },1000);
 
         window.addEventListener('keydown', (event) => this.onKeyDown(event));
         window.addEventListener('keyup', (event) => this.onKeyUp(event));

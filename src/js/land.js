@@ -12,20 +12,28 @@ export class Land{
         this.scene = scene;
         this.model = null;
 
-        this.loadModel()
+        this.loadModel();
+    }
+
+    modelDimensions()
+    {
+        return this.boundingBox = new THREE.Box3().setFromObject(this.model);
+            // const size = new THREE.Vector3();
+            // boundingBox.getSize(size);
+            // console.log(size);
     }
 
     loadModel()
     {
 
         const fbxLoader = new FBXLoader();
-        fbxLoader.load('public/models/Mount_Hood.fbx475CB4E6-94CC-49DE-9529-495E5E5F2B9D.fbx', (object) => {
-            object.scale.set(0.005, 0.005, 0.005); // Adjust these values to fit your scene
-            object.position.y = -100;
-            object.position.z = -3000;
+        fbxLoader.load('/models/Mount_Hood.fbx475CB4E6-94CC-49DE-9529-495E5E5F2B9D.fbx', (object) => {
+            this.model = object;
+            this.model.scale.set(0.005, 0.005, 0.005); // Adjust these values to fit your scene
+            this.model.position.y = -100;
+            this.model.position.z = -3000;
 
-            this.scene.add(object); // إضافة النموذج إلى المشهد
-            this.model = object; // حفظ مرجع النموذج في هذا المتغير
+            // this.scene.add(this.model); // إضافة النموذج إلى المشهد
         });
 
 
