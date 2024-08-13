@@ -1,6 +1,6 @@
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 import * as THREE from 'three';
-import * as dat from "dat.gui";
+import {Vectors} from "./Vectors";
 
 export class ModelManager
 {
@@ -9,94 +9,33 @@ export class ModelManager
         this.scene = scene; // مشهد 3D يتم إضافته من SceneManager
         this.camera = camera; // كاميرا 3D من SceneManager
         this.controls = controls; // إدارة المدخلات والتحكم من ControlsManager
+        this.cameraOffset = new THREE.Vector3(300, 150, 0); // إزاحة الكاميرا بالنسبة للقارب
+
 
         this.model = null; // متغير للاحتفاظ بنموذج القارب
         this.land = land;
         this.forces = forces;
+        this.vectors = new Vectors(this.scene);
 
 
         this.speed = 0; // السرعة الحالية للقارب
-        this.maxSpeed = 30; // السرعة القصوى للقارب
-        this.acceleration = 0.5; // التسارع عند التسارع
+        this.maxSpeed = 100; // السرعة القصوى للقارب
+        this.acceleration = 5; // التسارع عند التسارع
         this.braking = 0.1; // التباطؤ عند الفرملة
         this.friction = 0.05; // معامل الاحتكاك الذي يؤثر على التباطؤ الطبيعي
         this.rotationSpeed = 0.03; // سرعة دوران القارب
-        this.cameraOffset = new THREE.Vector3(300, 150, 0); // إزاحة الكاميرا بالنسبة للقارب
-
-        /**
-         *
-         * dat.GUI configuration
-         *
-         */
-
-        const gui = new dat.GUI();
-
-        //wind line
-        this.windLineParams = {
-            x: 500,
-            y: 50,
-            z: 500
-        };
-        this.windFolder = gui.addFolder('Wind Line');
-        this.windFolder.add(this.windLineParams, 'x').onChange(value => {
-            this.windLineParams.x = value;
-        });
-        this.windFolder.add(this.windLineParams, 'y').onChange(value => {
-            this.windLineParams.y = value;
-        });
-        this.windFolder.add(this.windLineParams, 'z').onChange(value => {
-            this.windLineParams.z = value;
-        });
-        this.windFolder.open();
-
-
-
-        //water line
-        this.waterLineParams = {
-            x: -500,
-            y: 20,
-            z: -500
-        };
-        this.waterFolder = gui.addFolder('Water Line');
-        this.waterFolder.add(this.waterLineParams, 'x').onChange(value => {
-            this.waterLineParams.x = value;
-        });
-        this.waterFolder.add(this.waterLineParams, 'y').onChange(value => {
-            this.waterLineParams.y = value;
-        });
-        this.waterFolder.add(this.waterLineParams, 'z').onChange(value => {
-            this.waterLineParams.z = value;
-        });
-        this.waterFolder.open();
 
 
         //wind vector (green)
-        const material1 = new THREE.LineBasicMaterial( { color: 0x00ff00 } );
-        const points1 = [];
-        points1.push( new THREE.Vector3(  0, 0, 0 ) );
-        points1.push( new THREE.Vector3( 0, 0, 0 ) );
-        const geometry1 = new THREE.BufferGeometry().setFromPoints( points1 );
-        this.line1 = new THREE.Line( geometry1, material1 );
+        this.line1 = this.vectors.createVector({ color: 0x00ff00 });
         this.scene.add(this.line1);
 
         //water vector (blue)
-        const material2 = new THREE.LineBasicMaterial( { color: 0x0000ff } );
-        const points2 = [];
-        points2.push( new THREE.Vector3(  0, 0, 0 ) );
-        points2.push( new THREE.Vector3( 0, 0, 0 ) );
-        const geometry2 = new THREE.BufferGeometry().setFromPoints( points2 );
-        this.line2 = new THREE.Line( geometry2, material2 );
+        this.line2 = this.vectors.createVector({ color: 0x0000ff });
         this.scene.add(this.line2);
 
-        //engine vector (red)
-        const material3 = new THREE.LineBasicMaterial( { color: 0xff0000 } );
-        const points3 = [];
-        points3.push( new THREE.Vector3(  0, 0, 0 ) );
-        points3.push( new THREE.Vector3( 500, 15, 500 ) );
-        const geometry3 = new THREE.BufferGeometry().setFromPoints( points3 );
-        this.line3 = new THREE.Line( geometry3, material3 );
+        this.line3 = this.vectors.createVector({ color: 0x000000 });
         this.scene.add(this.line3);
-
 
         this.loadModel(); // تحميل نموذج القارب
     }
@@ -111,17 +50,10 @@ export class ModelManager
             this.scene.add(object); // إضافة النموذج إلى المشهد
             this.model = object; // حفظ مرجع النموذج في هذا المتغير
 
-            const material = new THREE.LineBasicMaterial( { color: 0x000000 } );
-            const points = [];
-            points.push( new THREE.Vector3(  0, 15, 0 ) );
-            points.push( new THREE.Vector3( -500, 15, 0) );
-            const geometry = new THREE.BufferGeometry().setFromPoints( points );
-            this.line = new THREE.Line( geometry, material );
-
-            this.model.add(this.line);
-
-
-
+            // this.line = this.vectors.createVector({ color: 0x000000 });
+            // this.vectors.moveFirstPoint(0,15,0, this.line);
+            // this.vectors.moveSecondPoint(-1000,15,0, this.line);
+            // this.model.add(this.line);
         });
     }
 
@@ -132,71 +64,48 @@ export class ModelManager
     }
 
 
-    moveFirstPoint(newX, newY, newZ, line)
-    {
-        line.geometry.attributes.position.array[0] = newX;
-        line.geometry.attributes.position.array[1] = newY;
-        line.geometry.attributes.position.array[2] = newZ;
-
-        line.geometry.attributes.position.needsUpdate = true;
-    }
-
-
-    moveSecondPoint(newX, newY, newZ, line)
-    {
-        line.geometry.attributes.position.array[3] = newX;
-        line.geometry.attributes.position.array[4] = newY;
-        line.geometry.attributes.position.array[5] = newZ;
-
-        line.geometry.attributes.position.needsUpdate = true;
-    }
-
-
-
-
-
     update()
     {
-
-        if (this.model) { // التحقق من أن النموذج موجود
-
+        if (this.model)
+        {
             // تحديث السرعة بناءً على المدخلات
-            if (this.controls.isAccelerating) {
+            if (this.controls.isAccelerating)
+            {
                 this.speed += this.acceleration;
                 if (this.speed > this.maxSpeed) this.speed = this.maxSpeed; // قصر السرعة على الحد الأقصى
             }
-            if (this.controls.isBraking) {
+            if (this.controls.isBraking)
+            {
                 this.speed -= this.braking;
                 if (this.speed < -this.maxSpeed) this.speed = -this.maxSpeed; // قصر السرعة على الحد الأدنى
             }
 
             // تطبيق الاحتكاك إذا لم يكن هناك تسارع أو فرملة
-            if (!this.controls.isAccelerating && !this.controls.isBraking) {
+            if (!this.controls.isAccelerating && !this.controls.isBraking)
+            {
                 this.speed *= 1 - this.friction;
                 if (Math.abs(this.speed) < 0.01) this.speed = 0; // إيقاف السرعة إذا كانت صغيرة جداً
             }
 
             // دوران النموذج بناءً على المدخلات
-            if (this.controls.isTurningLeft) {
+            if (this.controls.isTurningLeft)
+            {
                 this.model.rotation.y += this.rotationSpeed * (this.speed / this.maxSpeed);
-                this.line3.rotation.y += this.rotationSpeed * (this.speed / this.maxSpeed);
             }
-            if (this.controls.isTurningRight) {
+            if (this.controls.isTurningRight)
+            {
                 this.model.rotation.y -= this.rotationSpeed * (this.speed / this.maxSpeed);
-                this.line3.rotation.y -= this.rotationSpeed * (this.speed / this.maxSpeed);
-
             }
 
 
             // if(!this.checkCollision())
                 this.model.translateX(-this.speed);// تحريك النموذج بناءً على السرعة الحالية
-                this.line3.geometry.attributes.position.array[3].translateX((-this.speed));
 
 
             //تحديث موقع الكاميرا بالنسبة لموقع القارب
-            // const offset = this.cameraOffset.clone().applyMatrix4(this.model.matrixWorld);
-            // this.camera.position.copy(offset);
-            // this.camera.lookAt(this.model.position);
+            const offset = this.cameraOffset.clone().applyMatrix4(this.model.matrixWorld);
+            this.camera.position.copy(offset);
+            this.camera.lookAt(this.model.position);
 
             //apply forces
             this.forces.intensityOfWeightPower();
@@ -212,48 +121,60 @@ export class ModelManager
 
 
             //wind arrow
-            this.moveFirstPoint(x, y, z, this.line1);
-            this.moveSecondPoint(
-                x + this.windLineParams.x,
-                y + this.windLineParams.y,
-                z + this.windLineParams.z,
+            this.vectors.moveFirstPoint(x, y + 60, z, this.line1);
+            this.vectors.moveSecondPoint(
+                x +  this.vectors.windLineParams.x,
+                this.vectors.windLineParams.y,
+                z +  this.vectors.windLineParams.z,
                 this.line1
             );
 
             //water arrow
-            this.moveFirstPoint(x, y, z, this.line2);
-            this.moveSecondPoint(
-                x + this.waterLineParams.x,
-                y + this.waterLineParams.y,
-                z + this.waterLineParams.z,
+            this.vectors.moveFirstPoint(x, y + 60, z, this.line2);
+            this.vectors.moveSecondPoint(
+                x +  this.vectors.waterLineParams.x,
+                this.vectors.waterLineParams.y,
+                z +  this.vectors.waterLineParams.z,
                 this.line2
             );
 
             //engine arrow
-            this.moveFirstPoint(x, y + 15, z, this.line3);
-            // if(x>=0 && z>=0)
-            //     this.moveSecondPoint(x + (500), y + 15, z + (500), this.line3);
-            // if(x>=0 && z<0)
-            //     this.moveSecondPoint(x + (500), y + 15, z - (500), this.line3);
-            // if(x<0 && z<0)
-            //     this.moveSecondPoint(x - (500), y + 15, z - (500), this.line3);
-            // if(x<0 && z>0)
-            //     this.moveSecondPoint(x - (500), y + 15, z + (500), this.line3);
+            this.vectors.moveFirstPoint(x, 50, z, this.line3);
+            this.updateLinePosition(); //moveSecondPoint
 
-            // console.log(this.model.position);
-            // this.angle(this.line1, this.line2);
+            this.angle(this.line3,this.line1);
+
         }
     }
 
-
-
-    angle( line , line2 )
+    updateLinePosition()
     {
-        const positions1 = line.geometry.attributes.position.array;
+        const modelPosition = this.model.position;
+
+        // Convert the Euler rotation to a Quaternion
+        const modelQuaternion = new THREE.Quaternion();
+        this.model.getWorldQuaternion(modelQuaternion); // Get the model's world rotation as a quaternion
+
+        // Calculate the forward direction vector
+        const forwardDirection = new THREE.Vector3(-1, 0, 0); // Assuming -Z is forward in Three.js
+        forwardDirection.applyQuaternion(modelQuaternion);
+
+        // Calculate the point in front of the model
+        const pointInFront = modelPosition.clone().add(forwardDirection.multiplyScalar(1000)); // Adjust the distance as needed
+
+        // Move the second point of the line to the calculated position
+        this.vectors.moveSecondPoint(pointInFront.x, pointInFront.y + 50, pointInFront.z, this.line3);
+    }
+
+
+    angle( line1 , line2 )
+    {
+        // استخراج النُّقَط من الخط الأول
+        const positions1 = line1.geometry.attributes.position.array;
         const pointA1 = new THREE.Vector3(positions1[0], positions1[1], positions1[2]);
         const pointA2 = new THREE.Vector3(positions1[3], positions1[4], positions1[5]);
 
-        // استخراج النقاط من الخط الثاني
+        // استخراج النُّقَط من الخط الثاني
         const positions2 = line2.geometry.attributes.position.array;
         const pointB1 = new THREE.Vector3(positions2[0], positions2[1], positions2[2]);
         const pointB2 = new THREE.Vector3(positions2[3], positions2[4], positions2[5]);
@@ -266,8 +187,7 @@ export class ModelManager
         const angle = vectorA.angleTo(vectorB);
         const angleInDegrees = THREE.MathUtils.radToDeg(angle);
 
-        console.log(`The angle between the lines is ${angleInDegrees } degrees.`);
-
+        console.log(`The angle between the lines is ${angleInDegrees} degrees.`);
     }
 
 
@@ -308,3 +228,5 @@ export class ModelManager
             }
         }
 }
+
+
