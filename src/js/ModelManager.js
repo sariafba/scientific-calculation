@@ -1,10 +1,11 @@
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 import * as THREE from 'three';
 import {Vectors} from "./Vectors";
+import {Forces} from "./Forces";
 
 export class ModelManager
 {
-    constructor(scene, camera, controls, land, forces)
+    constructor(scene, camera, controls, land)
     {
         this.scene = scene; // مشهد 3D يتم إضافته من SceneManager
         this.camera = camera; // كاميرا 3D من SceneManager
@@ -14,13 +15,13 @@ export class ModelManager
 
         this.model = null; // متغير للاحتفاظ بنموذج القارب
         this.land = land;
-        this.forces = forces;
+        this.forces = new Forces();
         this.vectors = new Vectors(this.scene);
 
 
         this.speed = 0; // السرعة الحالية للقارب
-        this.maxSpeed = 100; // السرعة القصوى للقارب
-        this.acceleration = 5; // التسارع عند التسارع
+        this.maxSpeed = 60; // السرعة القصوى للقارب
+
         this.braking = 0.1; // التباطؤ عند الفرملة
         this.friction = 0.05; // معامل الاحتكاك الذي يؤثر على التباطؤ الطبيعي
         this.rotationSpeed = 0.03; // سرعة دوران القارب
@@ -64,88 +65,126 @@ export class ModelManager
     }
 
 
+
+
+
+    netForce()
+    {
+        //مشان يتحدثو عالفولدر بعدين بظبطها
+        this.forces.intensityOfWindResistance();
+        this.forces.intensityOfWaterResistance();
+
+
+        return this.forces.intensityOfEnginePower();
+    }
+
+    acceleration()
+    {
+        return this.netForce() / (this.forces.params.Boat_Mass * 1000);
+    }
+
+    velocity()
+    {
+        return this.acceleration() * this.controls.timer;
+    }
+
     update()
     {
         if (this.model)
         {
+
+            // تحديث موقع الكاميرا بالنسبة لموقع القارب
+            const offset = this.cameraOffset.clone().applyMatrix4(this.model.matrixWorld);
+            this.camera.position.copy(offset);
+            this.camera.lookAt(this.model.position);
+
+            this.applyBuoyancy(); // تطبيق الطفو
+
+            //velocity = at
+            this.speed = this.velocity();
+
+            // Start the timer if accelerating from a standstill
+            if (this.controls.isAccelerating && this.speed === 0)
+                this.controls.startTimer();
+
             // تحديث السرعة بناءً على المدخلات
             if (this.controls.isAccelerating)
             {
-                this.speed += this.acceleration;
-                if (this.speed > this.maxSpeed) this.speed = this.maxSpeed; // قصر السرعة على الحد الأقصى
+                this.speed += this.acceleration();
+                if (this.speed > this.maxSpeed)
+                    this.speed = this.maxSpeed; // قصر السرعة على الحد الأقصى
             }
+
             if (this.controls.isBraking)
             {
                 this.speed -= this.braking;
-                if (this.speed < -this.maxSpeed) this.speed = -this.maxSpeed; // قصر السرعة على الحد الأدنى
+                if (this.speed <= 0)
+                    this.speed = 0; // قصر السرعة على الحد الأدنى
             }
 
             // تطبيق الاحتكاك إذا لم يكن هناك تسارع أو فرملة
             if (!this.controls.isAccelerating && !this.controls.isBraking)
             {
                 this.speed *= 1 - this.friction;
-                if (Math.abs(this.speed) < 0.01) this.speed = 0; // إيقاف السرعة إذا كانت صغيرة جداً
+                if (Math.abs(this.speed) < 0.01)
+                    this.speed = 0; // إيقاف السرعة إذا كانت صغيرة جداً
+            }
+
+            // Stop the timer if speed exceeds 0
+            if (this.speed === 0)
+            {
+                this.controls.stopTimer();
             }
 
             // دوران النموذج بناءً على المدخلات
-            if (this.controls.isTurningLeft)
-            {
+            if (this.controls.isTurningLeft) {
                 this.model.rotation.y += this.rotationSpeed * (this.speed / this.maxSpeed);
             }
-            if (this.controls.isTurningRight)
-            {
+            if (this.controls.isTurningRight) {
                 this.model.rotation.y -= this.rotationSpeed * (this.speed / this.maxSpeed);
             }
 
+            // تحريك النموذج بناءً على السرعة الحالية
+            this.model.translateX(-this.speed);
 
-            // if(!this.checkCollision())
-                this.model.translateX(-this.speed);// تحريك النموذج بناءً على السرعة الحالية
-
-
-            //تحديث موقع الكاميرا بالنسبة لموقع القارب
-            const offset = this.cameraOffset.clone().applyMatrix4(this.model.matrixWorld);
-            this.camera.position.copy(offset);
-            this.camera.lookAt(this.model.position);
-
-            //apply forces
-            this.forces.intensityOfWeightPower();
-            this.forces.intensityOfWaterResistance();
-            this.forces.intensityOfWindResistance();
-            this.forces.intensityOfEnginePower();
-            this.applyBuoyancy(); // تطبيق الطفو
 
 
             let x = this.model.position.x;
             let y = this.model.position.y;
             let z = this.model.position.z;
 
-
-            //wind arrow
+            // Wind arrow
             this.vectors.moveFirstPoint(x, y + 60, z, this.line1);
             this.vectors.moveSecondPoint(
-                x +  this.vectors.windLineParams.x,
+                x + this.vectors.windLineParams.x,
                 this.vectors.windLineParams.y,
-                z +  this.vectors.windLineParams.z,
+                z + this.vectors.windLineParams.z,
                 this.line1
             );
 
-            //water arrow
+            // Water arrow
             this.vectors.moveFirstPoint(x, y + 60, z, this.line2);
             this.vectors.moveSecondPoint(
-                x +  this.vectors.waterLineParams.x,
+                x + this.vectors.waterLineParams.x,
                 this.vectors.waterLineParams.y,
-                z +  this.vectors.waterLineParams.z,
+                z + this.vectors.waterLineParams.z,
                 this.line2
             );
 
-            //engine arrow
+            // Engine arrow
             this.vectors.moveFirstPoint(x, 50, z, this.line3);
-            this.updateLinePosition(); //moveSecondPoint
+            this.updateLinePosition(); // moveSecondPoint
 
-            this.angle(this.line3,this.line1);
-
+            console.log(
+                `speed ${this.speed}\n`,
+                `timer ${this.controls.timer}\n`,
+                `acceleration ${this.acceleration()}\n`,
+                `speed ${this.velocity()}`
+                );
+            // this.angle(this.line3,this.line1);
         }
     }
+
 
     updateLinePosition()
     {

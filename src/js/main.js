@@ -5,6 +5,8 @@ import { ControlsManager } from './ControlsManager.js';
 import { ModelManager } from './ModelManager.js';
 import {Land} from './land.js';
 import {Forces} from "./Forces";
+import {Audio} from './Audio'
+import * as THREE from "three";
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -17,9 +19,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const environmentManager = new EnvironmentManager(sceneManager.scene);
     const controlsManager = new ControlsManager();
     const land = new Land(sceneManager.scene);
-    const forces = new Forces();
-    const modelManager = new ModelManager(sceneManager.scene, sceneManager.camera, controlsManager, land, forces);
-    modelManager.forces = forces;
+    // const forces = new Forces(controlsManager.timer);
+    const modelManager = new ModelManager(sceneManager.scene, sceneManager.camera, controlsManager, land);
+    // const audio = new Audio(sceneManager.camera);
+
+
+
+
 
 
     //main loop

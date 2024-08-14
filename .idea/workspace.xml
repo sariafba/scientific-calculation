@@ -3,7 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="28fbaf5d-f525-48d6-816b-c239e5dc7237" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/ControlsManager.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/ControlsManager.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/Forces.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/Forces.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/js/ModelManager.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/ModelManager.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/land.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/land.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/main.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,22 +28,24 @@
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="2h6NwZAVHhg1v94t0kraYklR2TN" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "C:/Users/saria/Desktop/scientific-calculation/public/models",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.sourceCode.JavaScript",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/saria/Desktop/scientific-calculation/public/models&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.sourceCode.JavaScript&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\saria\Desktop\scientific-calculation\public\models" />
@@ -114,6 +120,7 @@
       <workItem from="1723487157038" duration="626000" />
       <workItem from="1723487804427" duration="29000000" />
       <workItem from="1723564512450" duration="10943000" />
+      <workItem from="1723617253808" duration="13722000" />
     </task>
     <servers />
   </component>

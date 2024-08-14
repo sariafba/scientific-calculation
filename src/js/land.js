@@ -18,9 +18,6 @@ export class Land{
     modelDimensions()
     {
         return this.boundingBox = new THREE.Box3().setFromObject(this.model);
-            // const size = new THREE.Vector3();
-            // boundingBox.getSize(size);
-            // console.log(size);
     }
 
     loadModel()
