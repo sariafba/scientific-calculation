@@ -5,13 +5,16 @@ export class Forces {
     constructor()
     {
         this.boatMass = 22000;
+
+        this.windV = 0;
+        this.waterV = 0;
+
         /**
          *
          * dat.GUI configuration
          *
          */
-
-        const gui = new dat.GUI();
+        this.gui = new dat.GUI();
 
         //general params
          this.params = {
@@ -20,10 +23,10 @@ export class Forces {
             rho: 1000,
             gravity: 9.81,
         };
-        gui.add(this.params, 'Boat_Mass', 20, 30).name('Boat Mass (ton)').onChange((value) => {
+        this.gui.add(this.params, 'Boat_Mass', 20, 30).name('Boat Mass (ton)').onChange((value) => {
             this.setBoatMass(value);
         });
-        gui.add(this.params, 'rho', 500, 2000).name('Rho').onChange((value) => {
+        this.gui.add(this.params, 'rho', 500, 2000).name('Rho').onChange((value) => {
             this.params.rho = value;
 
             // Update rho in other parameter groups
@@ -37,7 +40,7 @@ export class Forces {
 
 
         //Forces Folder
-        this.forcesFolder = gui.addFolder('Forces');
+        this.forcesFolder = this.gui.addFolder('Forces');
         this.forcesData = {
             Weight: 0,
             Buoyant_Force: 0,
@@ -55,20 +58,21 @@ export class Forces {
         this.forcesFolder.open();
 
         //engine params
-        this.engineFolder = gui.addFolder('Engine Parameters'); // Create a folder
+        this.engineFolder = this.gui.addFolder('Engine Parameters'); // Create a folder
         this.engineParams = {
             kt:0.2,
             rho: this.params.rho,
-            n:1200,
+            n: 3000,
             d:0.5
         }
+        this.n=0
         this.engineFolder.add(this.engineParams, 'kt').name('Kt');
         this.engineFolder.add(this.engineParams, 'rho').name('Rho (kg.m^-3)');
-        this.engineFolder.add(this.engineParams, 'n', 1000, 1500, 100).name('n (rpm)').onChange((value) => {
-            this.engineParams.n = value;
-            this.intensityOfEnginePower(this.engineParams);
-
-        });
+        // this.engineFolder.add(this.engineParams, 'n', 2000, 3000, 100).name('n (rpm)').onChange((value) => {
+        //     this.engineParams.n = value;
+        //     this.n = this.engineParams.n;
+        //     this.intensityOfEnginePower(this.n);
+        // });
         this.engineFolder.add(this.engineParams, 'd', 0, 1, 0.1).name('d (m)').onChange((value) => {
             this.engineParams.d = value;
             this.intensityOfEnginePower(this.engineParams);
@@ -76,33 +80,38 @@ export class Forces {
         });
         this.engineFolder.open();
 
+
         //water params
-        this.waterFolder = gui.addFolder('Water Parameters'); // Create a folder
+        this.waterFolder = this.gui.addFolder('Water Parameters'); // Create a folder
         this.waterParams = {
-            rho: this.params.rho,
-            a: (((15+16)*1.5*0.5) * 2) + (((1+1.2)*1.5*0.5) * 2),
+            rho: 1000,
+            a: 38,
             v: 1,
             cd:0.5,
         }
         this.waterFolder.add(this.params, 'rho').name('Rho (kg.m^-3)');
         this.waterFolder.add(this.waterParams, 'a').name('A (m^2)');
         this.waterFolder.add(this.waterParams, 'cd').name('Cd');
-        this.waterFolder.add(this.waterParams, 'v').name('v^2 (m.s^-1)');
+        this.waterFolder.add(this.waterParams, 'v', 0, 1, 0.1).name('v (m.s^-1)').onChange(value => {
+            this.waterParams.v = value;
+        });
 
         this.waterFolder.open();
 
         //wind params
-        this.windFolder = gui.addFolder('Wind Parameters');
+        this.windFolder = this.gui.addFolder('Wind Parameters');
         this.windParams = {
-            rho: this.params.rho,
-            a: (((15+16)* 3 * 0.5) * 2) + (((1+1.2) * 3 * 0.5) * 2),
+            rho: 1.225,
+            a: 20,
             v: 1,
             cd:0.5,
         }
-        this.windFolder.add(this.params, 'rho').name('Rho (kg.m^-3)');
+        this.windFolder.add(this.windParams, 'rho').name('Rho (kg.m^-3)');
         this.windFolder.add(this.windParams, 'a').name('A (m^2)');
         this.windFolder.add(this.windParams, 'cd').name('Cd');
-        this.windFolder.add(this.windParams, 'v').name('v^2 (m.s^-1)');
+        this.windFolder.add(this.windParams, 'v', 0, 5, 1).name('v (m.s^-1)').onChange(value => {
+            this.windParams.v = value;
+        });
 
         this.windFolder.open();
 
@@ -112,7 +121,16 @@ export class Forces {
         // Manually update the values displayed in the GUI for rho in the engine, water, and wind folders
         this.engineFolder.__controllers.forEach(controller => controller.updateDisplay());
         this.waterFolder.__controllers.forEach(controller => controller.updateDisplay());
-        this.windFolder.__controllers.forEach(controller => controller.updateDisplay());
+        // this.windFolder.__controllers.forEach(controller => controller.updateDisplay());
+    }
+
+    setWindV(v)
+    {
+        this.windV = v;
+    }
+    setWaterV(v)
+    {
+        this.waterV = v;
     }
 
     setBoatMass(value)
@@ -121,21 +139,27 @@ export class Forces {
     }
 
 
+
+
+
+
     intensityOfEnginePower()
     {
-        return this.forcesData.Engine_Force = this.engineParams.kt
+        return this.forcesData.Engine_Force =
+            this.engineParams.kt
             * this.params.rho
-            * Math.pow(this.engineParams.n/60,2)
+            * Math.pow(this.engineParams.n,2)
             * Math.pow(this.engineParams.d, 4);
     }
 
     intensityOfWindResistance()
     {
-        return this.forcesData.Wind_Resistance = 0.5
-            * this.params.rho
+        return this.forcesData.Wind_Resistance =
+            0.5
+            * this.windParams.rho
             * this.windParams.a
             * this.windParams.cd
-            * Math.pow(this.windParams.v, 2);
+            * Math.pow(this.windV, 2);
     }
 
     intensityOfWaterResistance()
@@ -143,8 +167,8 @@ export class Forces {
         return this.forcesData.Water_Resistance = 0.5
             * this.params.rho
             * this.waterParams.a
-            * this.windParams.cd
-            * Math.pow(this.waterParams.v, 2);
+            * this.waterParams.cd
+            * Math.pow(this.waterV, 2);
     }
 
     intensityOfBuoyancyPower()

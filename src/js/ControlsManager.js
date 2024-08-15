@@ -21,7 +21,8 @@ export class ControlsManager {
             let start = new Date().getTime();
             this.timerInterval = setInterval(() => {
                 let now = new Date().getTime();
-                this.timer = Math.round((now - start) / 1000);
+                // this.timer = Math.round((now - start) / 1000);
+                this.timer = (now - start) ;
                 // console.log(`Timer: ${Math.round(this.timer / 1000)}`);
             }, 1000);
         }

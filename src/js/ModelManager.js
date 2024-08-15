@@ -2,6 +2,7 @@ import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 import * as THREE from 'three';
 import {Vectors} from "./Vectors";
 import {Forces} from "./Forces";
+import * as dat from "dat.gui";
 
 export class ModelManager
 {
@@ -26,7 +27,6 @@ export class ModelManager
         this.friction = 0.05; // معامل الاحتكاك الذي يؤثر على التباطؤ الطبيعي
         this.rotationSpeed = 0.03; // سرعة دوران القارب
 
-
         //wind vector (green)
         this.line1 = this.vectors.createVector({ color: 0x00ff00 });
         this.scene.add(this.line1);
@@ -38,6 +38,24 @@ export class ModelManager
         this.line3 = this.vectors.createVector({ color: 0x000000 });
         this.scene.add(this.line3);
 
+
+        this.gui = new dat.GUI();
+
+        this.params = {
+            v: this.velocity(),
+            a: this.acceleration()
+        }
+        this.gui.add(this.params, 'v').listen();
+        this.gui.add(this.params, 'a').listen();
+
+
+        this.forces.engineFolder.add(this.forces.engineParams, 'n', 2000, 3000, 100).name('n (rpm)').onChange((value) => {
+            this.forces.engineParams.n = value;
+            this.forces.intensityOfEnginePower(this.forces.engineParams);
+        }).listen();
+
+
+
         this.loadModel(); // تحميل نموذج القارب
     }
 
@@ -45,7 +63,7 @@ export class ModelManager
     {
         const fbxLoader = new FBXLoader();
         fbxLoader.load('/models/test4/source/yacht.fbx', (object) => {
-            object.rotation.y = -Math.PI * 0.5; // تدوير النموذج للحصول على التوجه الصحيح
+            // object.rotation.y = -Math.PI * 0.5; // تدوير النموذج للحصول على التوجه الصحيح
             object.castShadow = true; // السماح للنموذج بإسقاط الظلال
             object.receiveShadow = true; // السماح للنموذج باستقبال الظلال
             this.scene.add(object); // إضافة النموذج إلى المشهد
@@ -64,18 +82,27 @@ export class ModelManager
         return this.boundingBox = new THREE.Box3().setFromObject(this.model);
     }
 
-
+    fixCamera()
+    {
+        // Update camera position relative to the boat
+        const offset = this.cameraOffset.clone().applyMatrix4(this.model.matrixWorld);
+        this.camera.position.copy(offset);
+        this.camera.lookAt(this.model.position);
+    }
 
 
 
     netForce()
     {
-        //مشان يتحدثو عالفولدر بعدين بظبطها
-        this.forces.intensityOfWindResistance();
-        this.forces.intensityOfWaterResistance();
+        // console.log("net force:",
+        //     this.forces.intensityOfEnginePower()
+        //     + (this.forces.intensityOfWaterResistance() * Math.cos(this.angle(this.line3, this.line2)))
+        //     + (this.forces.intensityOfWindResistance() * Math.cos(this.angle(this.line3, this.line1))));
 
-
-        return this.forces.intensityOfEnginePower();
+        return this.forces.intensityOfEnginePower()
+            + (this.forces.intensityOfWaterResistance() * Math.cos(this.angle(this.line2, this.line3)))
+            + (this.forces.intensityOfWindResistance() * Math.cos(this.angle(this.line1, this.line3)))
+            ;
     }
 
     acceleration()
@@ -85,104 +112,185 @@ export class ModelManager
 
     velocity()
     {
-        return this.acceleration() * this.controls.timer;
+        return this.acceleration() * (this.controls.timer/1000);
     }
+
+    relativeVelocityWind()
+    {
+        let angle = this.angle(this.line3,this.line1);
+        if(Math.cos(angle) > 0)
+        {
+            this.forces.setWindV(this.speed + this.forces.windParams.v);
+        }
+        else if(Math.cos(angle) < 0)
+        {
+            this.forces.setWindV(this.speed - this.forces.windParams.v);
+        }
+    }
+
+    relativeVelocityWater()
+    {
+        let angle = this.angle(this.line3,this.line2);
+        if(Math.cos(angle) > 0)
+        {
+            this.forces.setWaterV(this.speed + this.forces.waterParams.v);
+        }
+        else if(Math.cos(angle) < 0)
+        {
+            this.forces.setWaterV(this.speed - this.forces.waterParams.v);
+        }
+    }
+
+    centrifugalForce()
+    {
+        return (this.forces.boatMass * Math.pow(this.velocity(),2)) / this.radius() ;
+    }
+    radius(){
+        return this.velocity() / this.rotationSpeed ;
+    }
+
 
     update()
     {
+
         if (this.model)
         {
 
-            // تحديث موقع الكاميرا بالنسبة لموقع القارب
-            const offset = this.cameraOffset.clone().applyMatrix4(this.model.matrixWorld);
-            this.camera.position.copy(offset);
-            this.camera.lookAt(this.model.position);
+            // this.fixCamera();
 
-            this.applyBuoyancy(); // تطبيق الطفو
+            this.applyBuoyancy(); // Apply buoyancy
 
-            //velocity = at
-            this.speed = this.velocity();
+            this.updatedVectors();
+
+
+
+            this.params.v = this.speed;
+            this.params.a = this.acceleration();
+
 
             // Start the timer if accelerating from a standstill
             if (this.controls.isAccelerating && this.speed === 0)
+            {
                 this.controls.startTimer();
+                this.controls.timer += 0.000001
+            }
 
-            // تحديث السرعة بناءً على المدخلات
+            this.relativeVelocityWater();
+            this.relativeVelocityWind();
+
+            // Update speed based on input
             if (this.controls.isAccelerating)
             {
-                this.speed += this.acceleration();
+
+                this.speed = this.velocity() ; // Increase speed based on acceleration
+
+
                 if (this.speed > this.maxSpeed)
-                    this.speed = this.maxSpeed; // قصر السرعة على الحد الأقصى
+                {
+                    this.speed = this.maxSpeed; // Cap speed at the maximum value
+                }
             }
 
-            if (this.controls.isBraking)
+            else if (this.controls.isBraking)
             {
-                this.speed -= this.braking;
+                this.speed -= this.braking; // Decrease speed due to braking
+
                 if (this.speed <= 0)
-                    this.speed = 0; // قصر السرعة على الحد الأدنى
+                {
+                    this.speed = 0; // Ensure speed does not go negative
+                }
+            }
+            else
+            {
+                this.forces.engineParams.n = 0;
+                // Apply friction when neither accelerating nor braking
+                // this.forces.forcesData.Engine_Force = 0
+
+                this.speed -= this.friction;
+
+                if (this.speed <= 0.01)
+                {
+                    this.speed = 0; // Stop the boat if the speed is very low
+
+                }
             }
 
-            // تطبيق الاحتكاك إذا لم يكن هناك تسارع أو فرملة
-            if (!this.controls.isAccelerating && !this.controls.isBraking)
-            {
-                this.speed *= 1 - this.friction;
-                if (Math.abs(this.speed) < 0.01)
-                    this.speed = 0; // إيقاف السرعة إذا كانت صغيرة جداً
-            }
+
 
             // Stop the timer if speed exceeds 0
             if (this.speed === 0)
             {
                 this.controls.stopTimer();
+                this.controls.timer = 0;
             }
 
-            // دوران النموذج بناءً على المدخلات
-            if (this.controls.isTurningLeft) {
+
+
+            // Rotate the model based on input
+            if (this.controls.isTurningLeft)
+            {
                 this.model.rotation.y += this.rotationSpeed * (this.speed / this.maxSpeed);
             }
-            if (this.controls.isTurningRight) {
+            if (this.controls.isTurningRight)
+            {
                 this.model.rotation.y -= this.rotationSpeed * (this.speed / this.maxSpeed);
             }
 
-            // تحريك النموذج بناءً على السرعة الحالية
+
+
+
+            // Move the model based on current speed
             this.model.translateX(-this.speed);
 
 
 
-            let x = this.model.position.x;
-            let y = this.model.position.y;
-            let z = this.model.position.z;
 
-            // Wind arrow
-            this.vectors.moveFirstPoint(x, y + 60, z, this.line1);
-            this.vectors.moveSecondPoint(
-                x + this.vectors.windLineParams.x,
-                this.vectors.windLineParams.y,
-                z + this.vectors.windLineParams.z,
-                this.line1
-            );
-
-            // Water arrow
-            this.vectors.moveFirstPoint(x, y + 60, z, this.line2);
-            this.vectors.moveSecondPoint(
-                x + this.vectors.waterLineParams.x,
-                this.vectors.waterLineParams.y,
-                z + this.vectors.waterLineParams.z,
-                this.line2
-            );
-
-            // Engine arrow
-            this.vectors.moveFirstPoint(x, 50, z, this.line3);
-            this.updateLinePosition(); // moveSecondPoint
 
             console.log(
-                `speed ${this.speed}\n`,
+                ` speed ${this.speed}\n`,
+                `velocity ${this.velocity()}\n`,
                 `timer ${this.controls.timer}\n`,
-                `acceleration ${this.acceleration()}\n`,
-                `speed ${this.velocity()}`
-                );
-            // this.angle(this.line3,this.line1);
+                `netForce ${this.netForce()}\n`,
+                `relative water V ${this.forces.waterV}\n`,
+                `relative wind V ${this.forces.windV}\n`,
+                `radius ${this.radius()}\n`,
+                `centrifugalForce ${this.centrifugalForce()}\n`,
+            );
+            // console.log(this.angle(this.line1,this.line3), this.angle(this.line3,this.line1));
+
+
+
         }
+    }
+
+    updatedVectors()
+    {
+        // Update vector positions
+        let x = this.model.position.x;
+        let y = this.model.position.y;
+        let z = this.model.position.z;
+
+        // Wind arrow
+        this.vectors.moveFirstPoint(x, y + 60, z, this.line1);
+        this.vectors.moveSecondPoint(
+            x + this.vectors.windLineParams.x,
+            this.vectors.windLineParams.y,
+            z + this.vectors.windLineParams.z,
+            this.line1
+        );
+
+        // Water arrow
+        this.vectors.moveFirstPoint(x, y + 60, z, this.line2);
+        this.vectors.moveSecondPoint(
+            x + this.vectors.waterLineParams.x,
+            this.vectors.waterLineParams.y,
+            z + this.vectors.waterLineParams.z,
+            this.line2
+        );
+
+        // Engine arrow
+        this.vectors.moveFirstPoint(x, 50, z, this.line3);
+        this.updateLinePosition(); // Move the second point of the line
     }
 
 
@@ -206,7 +314,7 @@ export class ModelManager
     }
 
 
-    angle( line1 , line2 )
+    angle(line1 , line2)
     {
         // استخراج النُّقَط من الخط الأول
         const positions1 = line1.geometry.attributes.position.array;
@@ -224,9 +332,9 @@ export class ModelManager
 
         // حساب الزاوية بين الاتجاهين
         const angle = vectorA.angleTo(vectorB);
-        const angleInDegrees = THREE.MathUtils.radToDeg(angle);
+        // const angleInDegrees = THREE.MathUtils.radToDeg(angle);
 
-        console.log(`The angle between the lines is ${angleInDegrees} degrees.`);
+        return angle;
     }
 
 
