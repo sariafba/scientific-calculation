@@ -24,8 +24,9 @@ export class ModelManager
         this.maxSpeed = 60; // السرعة القصوى للقارب
 
         this.braking = 0.1; // التباطؤ عند الفرملة
-        this.friction = 0.05; // معامل الاحتكاك الذي يؤثر على التباطؤ الطبيعي
+        this.friction = 0.001; // معامل الاحتكاك الذي يؤثر على التباطؤ الطبيعي
         this.rotationSpeed = 0.03; // سرعة دوران القارب
+        this.isNSet = false;
 
         //wind vector (green)
         this.line1 = this.vectors.createVector({ color: 0x00ff00 });
@@ -94,11 +95,6 @@ export class ModelManager
 
     netForce()
     {
-        // console.log("net force:",
-        //     this.forces.intensityOfEnginePower()
-        //     + (this.forces.intensityOfWaterResistance() * Math.cos(this.angle(this.line3, this.line2)))
-        //     + (this.forces.intensityOfWindResistance() * Math.cos(this.angle(this.line3, this.line1))));
-
         return this.forces.intensityOfEnginePower()
             + (this.forces.intensityOfWaterResistance() * Math.cos(this.angle(this.line2, this.line3)))
             + (this.forces.intensityOfWindResistance() * Math.cos(this.angle(this.line1, this.line3)))
@@ -107,12 +103,12 @@ export class ModelManager
 
     acceleration()
     {
-        return this.netForce() / (this.forces.params.Boat_Mass * 1000);
+        return (this.netForce() / (this.forces.params.Boat_Mass * 1000));
     }
 
     velocity()
     {
-        return this.acceleration() * (this.controls.timer/1000);
+        return (this.acceleration()) * (this.controls.timer/1000);
     }
 
     relativeVelocityWind()
@@ -156,7 +152,7 @@ export class ModelManager
         if (this.model)
         {
 
-            // this.fixCamera();
+            this.fixCamera();
 
             this.applyBuoyancy(); // Apply buoyancy
 
@@ -181,8 +177,14 @@ export class ModelManager
             // Update speed based on input
             if (this.controls.isAccelerating)
             {
+                if(!this.isNSet)
+                {
+                    this.forces.engineParams.n = 3000;
+                    this.isNSet = true;
+                }
 
                 this.speed = this.velocity() ; // Increase speed based on acceleration
+
 
 
                 if (this.speed > this.maxSpeed)
@@ -203,6 +205,7 @@ export class ModelManager
             else
             {
                 this.forces.engineParams.n = 0;
+                this.isNSet = false;
                 // Apply friction when neither accelerating nor braking
                 // this.forces.forcesData.Engine_Force = 0
 
@@ -240,7 +243,12 @@ export class ModelManager
 
 
             // Move the model based on current speed
-            this.model.translateX(-this.speed);
+            // if(this.acceleration()<0)
+            //     this.model.translateX(this.speed);
+            // else
+                this.model.translateX(-this.speed);
+
+
 
 
 

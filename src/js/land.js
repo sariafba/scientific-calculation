@@ -30,7 +30,7 @@ export class Land{
             this.model.position.y = -100;
             this.model.position.z = -3000;
 
-            this.scene.add(this.model); // إضافة النموذج إلى المشهد
+            // this.scene.add(this.model); // إضافة النموذج إلى المشهد
         });
 
 

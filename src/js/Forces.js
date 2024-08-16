@@ -65,7 +65,7 @@ export class Forces {
             n: 3000,
             d:0.5
         }
-        this.n=0
+        this.n = 0
         this.engineFolder.add(this.engineParams, 'kt').name('Kt');
         this.engineFolder.add(this.engineParams, 'rho').name('Rho (kg.m^-3)');
         // this.engineFolder.add(this.engineParams, 'n', 2000, 3000, 100).name('n (rpm)').onChange((value) => {
