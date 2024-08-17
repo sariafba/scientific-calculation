@@ -60,7 +60,7 @@ export class Forces {
         //engine params
         this.engineFolder = this.gui.addFolder('Engine Parameters'); // Create a folder
         this.engineParams = {
-            kt:0.2,
+            kt:0.2    ,
             rho: this.params.rho,
             n: 3000,
             d:0.5
@@ -85,14 +85,14 @@ export class Forces {
         this.waterFolder = this.gui.addFolder('Water Parameters'); // Create a folder
         this.waterParams = {
             rho: 1000,
-            a: 38,
-            v: 1,
-            cd:0.5,
+            a: 12,
+            v: 3,
+            cd:0.018,
         }
         this.waterFolder.add(this.params, 'rho').name('Rho (kg.m^-3)');
         this.waterFolder.add(this.waterParams, 'a').name('A (m^2)');
         this.waterFolder.add(this.waterParams, 'cd').name('Cd');
-        this.waterFolder.add(this.waterParams, 'v', 0, 1, 0.1).name('v (m.s^-1)').onChange(value => {
+        this.waterFolder.add(this.waterParams, 'v', 0, 3, 0.1).name('v (m.s^-1)').onChange(value => {
             this.waterParams.v = value;
         });
 
@@ -102,9 +102,9 @@ export class Forces {
         this.windFolder = this.gui.addFolder('Wind Parameters');
         this.windParams = {
             rho: 1.225,
-            a: 20,
+            a: 9,
             v: 1,
-            cd:0.5,
+            cd:0.03,
         }
         this.windFolder.add(this.windParams, 'rho').name('Rho (kg.m^-3)');
         this.windFolder.add(this.windParams, 'a').name('A (m^2)');
@@ -117,7 +117,8 @@ export class Forces {
 
     }
 
-    updateGUI() {
+    updateGUI()
+    {
         // Manually update the values displayed in the GUI for rho in the engine, water, and wind folders
         this.engineFolder.__controllers.forEach(controller => controller.updateDisplay());
         this.waterFolder.__controllers.forEach(controller => controller.updateDisplay());
@@ -148,7 +149,7 @@ export class Forces {
         return this.forcesData.Engine_Force =
             this.engineParams.kt
             * this.params.rho
-            * Math.pow(this.engineParams.n,2)
+            * Math.pow((this.engineParams.n / 60),2)
             * Math.pow(this.engineParams.d, 4);
     }
 

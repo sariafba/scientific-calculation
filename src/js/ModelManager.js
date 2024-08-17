@@ -13,35 +13,33 @@ export class ModelManager
         this.controls = controls; // إدارة المدخلات والتحكم من ControlsManager
         this.cameraOffset = new THREE.Vector3(300, 150, 0); // إزاحة الكاميرا بالنسبة للقارب
 
-
-        this.model = null; // متغير للاحتفاظ بنموذج القارب
         this.land = land;
         this.forces = new Forces();
         this.vectors = new Vectors(this.scene);
 
-
         this.speed = 0; // السرعة الحالية للقارب
-        this.maxSpeed = 60; // السرعة القصوى للقارب
-
+        this.maxSpeed = 12; // السرعة القصوى للقارب
         this.braking = 0.1; // التباطؤ عند الفرملة
-        this.friction = 0.001; // معامل الاحتكاك الذي يؤثر على التباطؤ الطبيعي
+        this.friction = 0.05; // معامل الاحتكاك الذي يؤثر على التباطؤ الطبيعي
         this.rotationSpeed = 0.03; // سرعة دوران القارب
+        this.brakeForce = 8000;
+        this.centrifugal = 0 ;
+        this.rad = 0 ;
         this.isNSet = false;
 
         //wind vector (green)
         this.line1 = this.vectors.createVector({ color: 0x00ff00 });
         this.scene.add(this.line1);
-
         //water vector (blue)
         this.line2 = this.vectors.createVector({ color: 0x0000ff });
         this.scene.add(this.line2);
-
+        //engine vector
         this.line3 = this.vectors.createVector({ color: 0x000000 });
         this.scene.add(this.line3);
 
 
+        //a and v folder
         this.gui = new dat.GUI();
-
         this.params = {
             v: this.velocity(),
             a: this.acceleration()
@@ -60,6 +58,7 @@ export class ModelManager
         this.loadModel(); // تحميل نموذج القارب
     }
 
+
     loadModel()
     {
         const fbxLoader = new FBXLoader();
@@ -70,10 +69,10 @@ export class ModelManager
             this.scene.add(object); // إضافة النموذج إلى المشهد
             this.model = object; // حفظ مرجع النموذج في هذا المتغير
 
-            // this.line = this.vectors.createVector({ color: 0x000000 });
-            // this.vectors.moveFirstPoint(0,15,0, this.line);
-            // this.vectors.moveSecondPoint(-1000,15,0, this.line);
-            // this.model.add(this.line);
+            // // this.line = this.vectors.createVector({ color: 0x000000 });
+            // this.vectors.moveFirstPoint(0,15,0, this.line1);
+            // // this.vectors.moveSecondPoint(-1000,15,0, this.line);
+            // this.model.add(this.line1);
         });
     }
 
@@ -82,6 +81,7 @@ export class ModelManager
     {
         return this.boundingBox = new THREE.Box3().setFromObject(this.model);
     }
+
 
     fixCamera()
     {
@@ -92,24 +92,160 @@ export class ModelManager
     }
 
 
+    update()
+    {
+        if (this.model)
+        {
+            // this.fixCamera();
+            this.applyBuoyancy();
+            this.updatedVectors();
+            this.relativeVelocityWater();
+            this.relativeVelocityWind();
+
+
+            this.params.v = this.speed;
+            this.params.a = this.acceleration();
+
+
+
+            // Start the timer if accelerating from a standstill
+            if (this.controls.isAccelerating && this.speed === 0)
+            {
+                this.controls.startTimer();
+                this.controls.timer += 0.000001
+            }
+
+
+            // Update speed based on input
+            if (this.controls.isAccelerating)
+            {
+                if(!this.isNSet)
+                {
+                    this.forces.engineParams.n = 3000;
+                    this.isNSet = true;
+                }
+
+                this.speed = this.velocity() ; // Increase speed based on acceleration
+
+                if (this.speed > this.maxSpeed)
+                {
+                    this.speed = this.maxSpeed; // Cap speed at the maximum value
+                }
+            }
+            else if (this.controls.isBraking)
+            {
+                this.forces.engineParams.n = 0;
+                this.isNSet = false;
+
+                this.speed -= this.braking; // Decrease speed due to braking
+
+                if (this.speed <= 0)
+                {
+                    this.speed = 0; // Ensure speed does not go negative
+                }
+            }
+            // Apply friction when neither accelerating nor braking
+            else
+            {
+                this.forces.engineParams.n = 0;
+                this.isNSet = false;
+
+                this.speed -= this.friction;
+                // if(this.acceleration() < 0)
+                //     this.speed = this.acceleration() * -1;
+                // else
+                // this.speed -= this.acceleration();
+
+                if (this.speed <= 0.01)
+                    this.speed = 0; // Stop the boat if the speed is very low
+
+            }
+
+
+            // Stop the timer if speed exceeds 0
+            if (this.speed === 0)
+            {
+                this.controls.stopTimer();
+                this.controls.timer = 0;
+            }
+
+
+            // Rotate the model based on input
+            if (this.controls.isTurningLeft)
+            {
+                this.rad = this.radius();
+                this.centrifugal = this.centrifugalForce();
+                this.model.rotation.y += this.rotationSpeed * (this.speed / this.maxSpeed);
+            }
+            if (this.controls.isTurningRight)
+            {
+                this.rad = this.radius();
+                this.centrifugal = this.centrifugalForce();
+                this.model.rotation.y -= this.rotationSpeed * (this.speed / this.maxSpeed);
+            }
+            if (!this.controls.isTurningLeft && !this.controls.isTurningRight)
+            {
+                this.rad = 0;
+                this.centrifugal = 0;
+
+            }
+
+
+            if(this.checkCollision())
+                this.speed = 0;
+
+
+            // Move the model based on current speed
+            // if(this.acceleration()<0)
+            // {
+            //     this.speed -= this.friction
+            //     this.model.translateX(-this.speed);
+            // }
+            // else
+            this.model.translateX(-this.speed);
+
+
+
+            console.log(
+                ` speed ${this.speed}\n`,
+                `velocity ${this.velocity()}\n`,
+                // `timer ${this.controls.timer}\n`,
+                // `netForce ${this.netForce()}\n`,
+                // `relative water V ${this.forces.waterV}\n`,
+                // `relative wind V ${this.forces.windV}\n`,
+                `radius ${this.rad}\n`,
+                `centrifugalForce ${this.centrifugal}\n`,
+            );
+
+        }
+    }
+
 
     netForce()
     {
         return this.forces.intensityOfEnginePower()
             + (this.forces.intensityOfWaterResistance() * Math.cos(this.angle(this.line2, this.line3)))
             + (this.forces.intensityOfWindResistance() * Math.cos(this.angle(this.line1, this.line3)))
+            -this.brakeForce
             ;
     }
 
+
     acceleration()
     {
-        return (this.netForce() / (this.forces.params.Boat_Mass * 1000));
+        let netForce = this.netForce() / (this.forces.params.Boat_Mass * 1000)
+
+        return netForce < 0 ? 0 : netForce;
     }
+
 
     velocity()
     {
-        return (this.acceleration()) * (this.controls.timer/1000);
+        let v = (this.acceleration()) * (this.controls.timer/1000);
+
+        return v //= v > 12 ? this.speed : v;
     }
+
 
     relativeVelocityWind()
     {
@@ -124,6 +260,7 @@ export class ModelManager
         }
     }
 
+
     relativeVelocityWater()
     {
         let angle = this.angle(this.line3,this.line2);
@@ -137,139 +274,18 @@ export class ModelManager
         }
     }
 
+
     centrifugalForce()
     {
         return (this.forces.boatMass * Math.pow(this.velocity(),2)) / this.radius() ;
     }
-    radius(){
+
+
+    radius()
+    {
         return this.velocity() / this.rotationSpeed ;
     }
 
-
-    update()
-    {
-
-        if (this.model)
-        {
-
-            this.fixCamera();
-
-            this.applyBuoyancy(); // Apply buoyancy
-
-            this.updatedVectors();
-
-
-
-            this.params.v = this.speed;
-            this.params.a = this.acceleration();
-
-
-            // Start the timer if accelerating from a standstill
-            if (this.controls.isAccelerating && this.speed === 0)
-            {
-                this.controls.startTimer();
-                this.controls.timer += 0.000001
-            }
-
-            this.relativeVelocityWater();
-            this.relativeVelocityWind();
-
-            // Update speed based on input
-            if (this.controls.isAccelerating)
-            {
-                if(!this.isNSet)
-                {
-                    this.forces.engineParams.n = 3000;
-                    this.isNSet = true;
-                }
-
-                this.speed = this.velocity() ; // Increase speed based on acceleration
-
-
-
-                if (this.speed > this.maxSpeed)
-                {
-                    this.speed = this.maxSpeed; // Cap speed at the maximum value
-                }
-            }
-
-            else if (this.controls.isBraking)
-            {
-                this.speed -= this.braking; // Decrease speed due to braking
-
-                if (this.speed <= 0)
-                {
-                    this.speed = 0; // Ensure speed does not go negative
-                }
-            }
-            else
-            {
-                this.forces.engineParams.n = 0;
-                this.isNSet = false;
-                // Apply friction when neither accelerating nor braking
-                // this.forces.forcesData.Engine_Force = 0
-
-                this.speed -= this.friction;
-
-                if (this.speed <= 0.01)
-                {
-                    this.speed = 0; // Stop the boat if the speed is very low
-
-                }
-            }
-
-
-
-            // Stop the timer if speed exceeds 0
-            if (this.speed === 0)
-            {
-                this.controls.stopTimer();
-                this.controls.timer = 0;
-            }
-
-
-
-            // Rotate the model based on input
-            if (this.controls.isTurningLeft)
-            {
-                this.model.rotation.y += this.rotationSpeed * (this.speed / this.maxSpeed);
-            }
-            if (this.controls.isTurningRight)
-            {
-                this.model.rotation.y -= this.rotationSpeed * (this.speed / this.maxSpeed);
-            }
-
-
-
-
-            // Move the model based on current speed
-            // if(this.acceleration()<0)
-            //     this.model.translateX(this.speed);
-            // else
-                this.model.translateX(-this.speed);
-
-
-
-
-
-
-
-            console.log(
-                ` speed ${this.speed}\n`,
-                `velocity ${this.velocity()}\n`,
-                `timer ${this.controls.timer}\n`,
-                `netForce ${this.netForce()}\n`,
-                `relative water V ${this.forces.waterV}\n`,
-                `relative wind V ${this.forces.windV}\n`,
-                `radius ${this.radius()}\n`,
-                `centrifugalForce ${this.centrifugalForce()}\n`,
-            );
-            // console.log(this.angle(this.line1,this.line3), this.angle(this.line3,this.line1));
-
-
-
-        }
-    }
 
     updatedVectors()
     {
@@ -382,6 +398,8 @@ export class ModelManager
                     this.model.position.y = -10;
             }
         }
+
+
 }
 
 
