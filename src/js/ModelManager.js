@@ -6,7 +6,7 @@ import * as dat from "dat.gui";
 
 export class ModelManager
 {
-    constructor(scene, camera, controls, land)
+    constructor(scene, camera, controls, land, audio)
     {
         this.scene = scene; // مشهد 3D يتم إضافته من SceneManager
         this.camera = camera; // كاميرا 3D من SceneManager
@@ -14,6 +14,7 @@ export class ModelManager
         this.cameraOffset = new THREE.Vector3(300, 150, 0); // إزاحة الكاميرا بالنسبة للقارب
 
         this.land = land;
+        this.audio = audio;
         this.forces = new Forces();
         this.vectors = new Vectors(this.scene);
 
@@ -42,13 +43,20 @@ export class ModelManager
         this.gui = new dat.GUI();
         this.params = {
             v: this.velocity(),
-            a: this.acceleration()
+            a: this.acceleration(),
+            rad: 0,
+            centrifugal: 0
         }
         this.gui.add(this.params, 'v').listen();
         this.gui.add(this.params, 'a').listen();
+        this.gui.add(this.params, 'rad').listen();
+        this.gui.add(this.params, 'centrifugal').listen();
 
 
-        this.forces.engineFolder.add(this.forces.engineParams, 'n', 2000, 3000, 100).name('n (rpm)').onChange((value) => {
+        this.forces.engineFolder
+            .add(this.forces.engineParams, 'n', 2000, 3000, 100)
+            .name('n (rpm)')
+            .onChange((value) => {
             this.forces.engineParams.n = value;
             this.forces.intensityOfEnginePower(this.forces.engineParams);
         }).listen();
@@ -85,10 +93,16 @@ export class ModelManager
 
     fixCamera()
     {
+        // console.log(this.model.position);
+
+
         // Update camera position relative to the boat
         const offset = this.cameraOffset.clone().applyMatrix4(this.model.matrixWorld);
         this.camera.position.copy(offset);
         this.camera.lookAt(this.model.position);
+
+
+        // this.camera.lookAt({x:0, y:0, z:0});
     }
 
 
@@ -121,6 +135,7 @@ export class ModelManager
             {
                 if(!this.isNSet)
                 {
+                    this.audio.playAudio();
                     this.forces.engineParams.n = 3000;
                     this.isNSet = true;
                 }
@@ -132,21 +147,23 @@ export class ModelManager
                     this.speed = this.maxSpeed; // Cap speed at the maximum value
                 }
             }
-            else if (this.controls.isBraking)
-            {
-                this.forces.engineParams.n = 0;
-                this.isNSet = false;
-
-                this.speed -= this.braking; // Decrease speed due to braking
-
-                if (this.speed <= 0)
-                {
-                    this.speed = 0; // Ensure speed does not go negative
-                }
-            }
+            // else if (this.controls.isBraking)
+            // {
+            //     this.audio.pauseAudio();
+            //     this.forces.engineParams.n = 0;
+            //     this.isNSet = false;
+            //
+            //     this.speed -= this.braking; // Decrease speed due to braking
+            //
+            //     if (this.speed <= 0)
+            //     {
+            //         this.speed = 0; // Ensure speed does not go negative
+            //     }
+            // }
             // Apply friction when neither accelerating nor braking
             else
             {
+                this.audio.pauseAudio();
                 this.forces.engineParams.n = 0;
                 this.isNSet = false;
 
@@ -173,20 +190,20 @@ export class ModelManager
             // Rotate the model based on input
             if (this.controls.isTurningLeft)
             {
-                this.rad = this.radius();
-                this.centrifugal = this.centrifugalForce();
+                this.params.rad = this.radius();
+                this.params.centrifugal = this.centrifugalForce();
                 this.model.rotation.y += this.rotationSpeed * (this.speed / this.maxSpeed);
             }
             if (this.controls.isTurningRight)
             {
-                this.rad = this.radius();
-                this.centrifugal = this.centrifugalForce();
+                this.params.rad = this.radius();
+                this.params.centrifugal = this.centrifugalForce();
                 this.model.rotation.y -= this.rotationSpeed * (this.speed / this.maxSpeed);
             }
             if (!this.controls.isTurningLeft && !this.controls.isTurningRight)
             {
-                this.rad = 0;
-                this.centrifugal = 0;
+                this.params.rad = 0;
+                this.params.centrifugal = 0;
 
             }
 
@@ -207,8 +224,8 @@ export class ModelManager
 
 
             console.log(
-                ` speed ${this.speed}\n`,
-                `velocity ${this.velocity()}\n`,
+                // ` speed ${this.speed}\n`,
+                // `velocity ${this.velocity()}\n`,
                 // `timer ${this.controls.timer}\n`,
                 // `netForce ${this.netForce()}\n`,
                 // `relative water V ${this.forces.waterV}\n`,
@@ -223,11 +240,19 @@ export class ModelManager
 
     netForce()
     {
+        if(!this.controls.isAccelerating)
         return this.forces.intensityOfEnginePower()
             + (this.forces.intensityOfWaterResistance() * Math.cos(this.angle(this.line2, this.line3)))
             + (this.forces.intensityOfWindResistance() * Math.cos(this.angle(this.line1, this.line3)))
             -this.brakeForce
             ;
+        else
+            return this.forces.intensityOfEnginePower()
+                + (this.forces.intensityOfWaterResistance() * Math.cos(this.angle(this.line2, this.line3)))
+                + (this.forces.intensityOfWindResistance() * Math.cos(this.angle(this.line1, this.line3)))
+        ;
+
+
     }
 
 
@@ -235,7 +260,8 @@ export class ModelManager
     {
         let netForce = this.netForce() / (this.forces.params.Boat_Mass * 1000)
 
-        return netForce < 0 ? 0 : netForce;
+        return netForce;
+        // return netForce < 0 ? 0 : netForce;
     }
 
 

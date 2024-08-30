@@ -44,9 +44,9 @@ export class Vectors
         this.waterFolder.add(this.waterLineParams, 'x').onChange(value => {
             this.waterLineParams.x = value;
         });
-        this.waterFolder.add(this.waterLineParams, 'y').onChange(value => {
-            this.waterLineParams.y = value;
-        });
+        // this.waterFolder.add(this.waterLineParams, 'y').onChange(value => {
+        //     this.waterLineParams.y = value;
+        // });
         this.waterFolder.add(this.waterLineParams, 'z').onChange(value => {
             this.waterLineParams.z = value;
         });

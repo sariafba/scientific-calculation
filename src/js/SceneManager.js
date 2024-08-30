@@ -3,8 +3,8 @@ import {OrbitControls} from "three/examples/jsm/controls/OrbitControls.js";
 
 export class SceneManager {
 
-    constructor(container) {
-
+    constructor(container)
+    {
         // Initialize scene
         this.scene = new THREE.Scene();
 
@@ -15,14 +15,14 @@ export class SceneManager {
         container.appendChild(this.renderer.domElement);
 
         // Initialize camera
-    this.camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 0.1, 100000);
+        this.camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 0.1, 100000);
 
         // Handle window resize
         window.addEventListener('resize', () => this.onWindowResize());
 
         // Optional: Add helpers
-        const axesHelper = new THREE.AxesHelper(100);
-        this.scene.add(axesHelper);
+        // const axesHelper = new THREE.AxesHelper(100);
+        // this.scene.add(axesHelper);
 
         /**
          * orbit
@@ -35,13 +35,15 @@ export class SceneManager {
 
     }
 
-    onWindowResize() {
+    onWindowResize()
+    {
         this.camera.aspect = window.innerWidth / window.innerHeight;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
-    render() {
+    render()
+    {
         this.renderer.render(this.scene, this.camera);
     }
 }

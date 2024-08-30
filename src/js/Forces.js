@@ -103,13 +103,13 @@ export class Forces {
         this.windParams = {
             rho: 1.225,
             a: 9,
-            v: 1,
+            v: 5,
             cd:0.03,
         }
         this.windFolder.add(this.windParams, 'rho').name('Rho (kg.m^-3)');
         this.windFolder.add(this.windParams, 'a').name('A (m^2)');
         this.windFolder.add(this.windParams, 'cd').name('Cd');
-        this.windFolder.add(this.windParams, 'v', 0, 5, 1).name('v (m.s^-1)').onChange(value => {
+        this.windFolder.add(this.windParams, 'v', 4, 20, 1).name('v (m.s^-1)').onChange(value => {
             this.windParams.v = value;
         });
 

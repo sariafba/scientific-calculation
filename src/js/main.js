@@ -16,8 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const environmentManager = new EnvironmentManager(sceneManager.scene);
     const controlsManager = new ControlsManager();
     const land = new Land(sceneManager.scene);
-    const modelManager = new ModelManager(sceneManager.scene, sceneManager.camera, controlsManager, land);
-    // const audio = new Audio(sceneManager.camera);
+    const audio = new Audio(sceneManager.camera);
+    const modelManager = new ModelManager(sceneManager.scene, sceneManager.camera, controlsManager, land, audio);
 
 
     //main loop
